@@ -1,9 +1,5 @@
 using DataServer.Data;
-using DataServer.Data.DataLoaders;
-using DataServer.Data.Mutations;
 using DataServer.Data.Queries;
-using DataServer.Data.Subscriptions;
-using DataServer.Models.Types;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Builder;
@@ -21,9 +17,7 @@ namespace DataServer
         {
             services.AddControllers();
 
-            services.AddPooledDbContextFactory<ApplicationDbContext>(options => options.UseSqlite("Data Source=conferences.db"));
-
-            services.AddScoped(provider => provider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext());
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite("Data Source=conferences.db"));
 
             services.AddGraphQLServer()
                 .AddQueryType(d => d
@@ -31,32 +25,12 @@ namespace DataServer
                         .Field("version")
                         .Resolve(typeof(IResolverContext).Assembly.GetName().Version?.ToString()))
                     .AddTypeExtension<SpeakerQueries>()
-                    .AddTypeExtension<SessionQueries>()
-                    .AddTypeExtension<TrackQueries>()
-                    .AddTypeExtension<AttendeeQueries>()
-                .AddMutationType(d => d.Name(OperationTypeNames.Mutation))
-                    .AddTypeExtension<SpeakerMutations>()
-                    .AddTypeExtension<SessionMutations>()
-                    .AddTypeExtension<TrackMutations>()
-                    .AddTypeExtension<AttendeeMutations>()
-                .AddSubscriptionType(d => d.Name(OperationTypeNames.Subscription))
-                    .AddTypeExtension<SessionSubscriptions>()
-                    .AddTypeExtension<AttendeeSubscriptions>()
-                .AddType<SpeakerType>()
-                .AddType<SessionType>()
-                .AddType<AttendeeType>()
-                .AddType<TrackType>()
                 .AddProjections()
                 .AddFiltering()
                 .AddSorting()
                 //.EnableRelaySupport()
-                .AddGlobalObjectIdentification()
                 // ×¢²áÊý¾Ý¼ÓÔØÆ÷
-                .AddDataLoader<SpeakerByIdDataLoader>()
-                .AddDataLoader<SessionByIdDataLoader>()
-                .AddDataLoader<AttendeeByIdDataLoader>()
-                .AddDataLoader<TrackByIdDataLoader>()
-                .AddInMemorySubscriptions();
+                .InitializeOnStartup();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
