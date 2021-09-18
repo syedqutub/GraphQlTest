@@ -16,7 +16,7 @@ namespace DataServer.Data.Queries
         [UseFiltering]
         [UseSorting]
         public IQueryable<Speaker> GetSpeakers(
-            [ScopedService] ApplicationDbContext context) =>
+            [Service] ApplicationDbContext context) =>
                 context.Speakers.AsNoTracking();
 
     }
